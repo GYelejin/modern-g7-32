@@ -132,6 +132,6 @@
     }
 
     if performer != none {
-        sign-field(performer.name, performer.position)
+        sign-field(performer.at("name", default: none), [Исполнитель НИР,\ #performer.at("position", default: none)], part: performer.at("part", default: none))
     }
 }

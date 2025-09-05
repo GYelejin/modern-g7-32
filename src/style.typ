@@ -37,6 +37,7 @@
     font: "Times New Roman",
     size: text-size,
     lang: "ru",
+    hyphenate: false
   )
 
   /*
@@ -45,8 +46,11 @@
    */
   set par(
     justify: true,
-    leading: 1em,
-    first-line-indent: indent
+    first-line-indent: (
+      amount: indent,
+      all: true,
+    ),
+    spacing: 1.5em
   )
 
   /*
@@ -145,6 +149,22 @@
     it
   }
   show figure.caption.where(kind: table): set align(left)
+    show table.cell: set align(left)
+  // TODO: Расположить table.header по центру и сделать шрифт жирным
+
+  set list(marker: [–], indent: indent, spacing: 1em)
+  set enum(indent: indent, spacing: 1em)
+
+  set page(footer: context {
+    if counter(page).get() == (1,) and not hide-title {
+      align(title-footer-align)[#city #year]
+    } else {
+      align(pagination-align)[#counter(page).display()]
+    }
+  })
+
+  set bibliography(style: "gost-r-705-2008-numeric", title: structural-heading-titles.references)
+
 
   /*
    * ГОСТ 7.32-2017, п. 6.4.6: "При необходимости ссылки в тексте отчета на один из элементов перечисления вместо тире ставят строчные буквы русского алфавита со скобкой, начиная с буквы "а" (за исключением букв ё, з, й, о, ч, ъ, ы, ь)."

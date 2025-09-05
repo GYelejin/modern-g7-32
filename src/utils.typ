@@ -34,11 +34,7 @@
   let not-required-keys = expected-keys.filter(key => key.at(-1) != "*")
 
   if type(field) == type(none) {
-    let result = (:)
-    for key in clean-expected-keys {
-      result.insert(key, default.at(key, default: none))
-    }
-    return result
+    return clean-expected-keys.map(get-default).to-dict()
   }
 
   if type(field) == dictionary {

@@ -47,7 +47,8 @@
      */
     block(
       width: 100%,
-      title-template(..title-arguments)
+      title-template(..title-arguments),
+      breakable: false,
     )
   }
 
