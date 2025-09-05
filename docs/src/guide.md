@@ -73,7 +73,7 @@
 
 После установки необходимо создать файл с расширением `.typ` и использовать синтаксис импорта шаблона:
 
-```typst
+```typ
 #import "@preview/modern-g7-32": gost, abstract, title-templates, annexes, annex-heading
 
 #show: gost.with(
