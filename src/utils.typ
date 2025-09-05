@@ -1,9 +1,23 @@
+/*
+ * modern-g7-32 :: утилиты
+ *
+ * Этот модуль содержит вспомогательные функции, используемые в других частях шаблона.
+ * Функции предназначены для обработки данных, форматирования текста и генерации нумерации.
+ */
+
+// Функция `small-text` применяет к своему содержимому (body) малый размер шрифта,
+// который задан в глобальных параметрах шаблона.
 #let small-text = body => context {
+  // Запрашивает параметры шаблона, сохраненные в метаданных.
   let target-size = query(<modern-g7-32-parameters>).first().value.small-text-size
+  // Устанавливает полученный размер текста для содержимого.
   set text(size: target-size)
+  // Возвращает отформатированное содержимое.
   body
 }
 
+// Функция `fetch-field` для гибкого извлечения значений из различных структур данных (словарь, массив, строка).
+// Позволяет задавать обязательные ключи и значения по умолчанию.
 #let fetch-field(field, expected-keys, default: (:), hint: "") = {
   let expected-keys-arg-error = "Ожидаемые ключи должны быть списком строк, например '(arg1*, arg2), здесь arg1 - обязательный агрумент, а arg2 - необязательный'"
 
@@ -20,53 +34,62 @@
   let not-required-keys = expected-keys.filter(key => key.at(-1) != "*")
 
   if type(field) == type(none) {
-    return clean-expected-keys.map(get-default).to-dict()
-  }
-
-  if type(field) == dictionary {
-    for key in required-keys {
-      assert(key in field.keys(), message: "В словаре " + hint + " отсутствует обязательный ключ '" + key + "'")
-    }
-    for key in field.keys() {
-      assert(key in clean-expected-keys, message: "В словаре " + hint + " обнаружен неожиданный ключ '" + key + "', допустимые ключи: " + repr(expected-keys))
-    }
-    let result = clean-expected-keys.map(get-default).to-dict()
-    for (key, value) in field {
-      result.insert(key, value)
+    let result = (:)
+    for key in clean-expected-keys {
+      result.insert(key, default.at(key, default: none))
     }
     return result
   }
 
-  else if type(field) == array {
-    assert(field.len() >= required-keys.len(), message: "В списке " + hint + " указаны не все обязательные элементы: " + repr(required-keys))
-    assert(field.len() <= expected-keys.len(), message: "В списке " + hint + " указано слишком много аргументов, требуемые: " + repr(expected-keys))
+  if type(field) == dictionary {
+    let result = (:)
+    for key in clean-expected-keys {
+      result.insert(key, field.at(key, default: default.at(key, default: none)))
+    }
+
+    for key in required-keys {
+      assert(key in field.keys(), message: "Обязательное поле '" + key + "' не было найдено в словаре " + hint)
+    }
+
+    return result
+  } else if type(field) == array {
     let result = (:)
     for (i, key) in clean-expected-keys.enumerate() {
       result.insert(key, field.at(i, default: default.at(key, default: none)))
     }
-    return result
-  }
 
-  else if type(field) in (str, int, length) {
-    let result = clean-expected-keys.map(get-default).to-dict()
-    result.insert(clean-expected-keys.at(0), field)
-    return result
-  }
+    for key in required-keys {
+      assert(clean-expected-keys.find(it => it == key) < field.len(), message: "Обязательное поле '" + key + "' не было найдено в массиве " + hint)
+    }
 
-  else {
-    panic("Некорректный тип поля " + repr(type(field)) + "(" + repr(field) + ") используйте словарь, список или строку для значения " + hint)
+    return result
+  } else if type(field) in (str, int, length) {
+    let result = (:)
+    let first-key = clean-expected-keys.first()
+    result.insert(first-key, field)
+    for key in clean-expected-keys.slice(1) {
+      result.insert(key, default.at(key, default: none))
+    }
+    return result
+  } else {
+    panic("Некорректный тип поля " + hint)
   }
 }
 
+/*
+ * ГОСТ 7.32-2017, п. 6.1.4: "Фамилии, наименования учреждений, организаций, фирм, наименования изделий и другие имена собственные в отчете приводят на языке оригинала. Допускается транслитерировать имена собственные..."
+ * Эта функция помогает сохранить целостность имен, предотвращая их разрыв при переносе строк.
+ */
 #let unbreak-name(name) = {
   if name == none { return }
   return name.replace(" ", "\u{00A0}")
 }
 
+// Функция `sign-field` создает блок для подписи (должность, ФИО).
 #let sign-field(name, position, part: none, details: "подпись, дата") = {
   let part-cell = []
   if part != none {
-    part-cell = table.cell(align: top)[(#small-text[#part])]
+    part-cell = table.cell(align: left)[#part]
   }
 
   set par(justify: false)
@@ -80,6 +103,9 @@
   )
 }
 
+/*
+ * ГОСТ 7.32-2017, п. 6.17.4: "Приложения обозначают прописными буквами кириллического алфавита, начиная с А, за исключением букв Ё, З, Й, О, Ч, Ъ, Ы, Ь."
+ */
 #let get-numbering-alphabet(number) = {
   let alphabet = ("а", "б", "в", "г", "д", "е", "ж", "з", "и", "к", "л", "м", "н", "о", "п", "р", "с", "т", "у", "ф", "х", "ц", "ч", "ш", "щ", "э", "ю", "я")
   let result = ""
