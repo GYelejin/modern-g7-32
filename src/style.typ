@@ -103,6 +103,20 @@
   show figure: i-figured.show-figure.with(extra-prefixes: (atom: "atom:"))
   show math.equation: i-figured.show-equation
 
+
+  show: codly-init
+    codly(
+        display-icon: false,
+        display-name: false,
+        languages: codly-languages,
+        number-align: right,
+        skip-line: align(center, "..."),
+        skip-number: align(left, "..."),
+        smart-skip: true,
+        stroke: black + 0.8pt,
+        zebra-fill: none,
+    )
+
   /*
    * ГОСТ 7.32-2017, п. 6.5.1: "Иллюстрации ... следует располагать в отчете непосредственно после текста отчета, где они упоминаются впервые, или на следующей странице"
    * ГОСТ 7.32-2017, п. 6.6.2: "Таблицу следует располагать непосредственно после текста, в котором она упоминается впервые, или на следующей странице."
@@ -149,8 +163,9 @@
     it
   }
   show figure.caption.where(kind: table): set align(left)
-    show table.cell: set align(left)
+  show table.cell: set align(left)
   // TODO: Расположить table.header по центру и сделать шрифт жирным
+
 
   set list(marker: [–], indent: indent, spacing: 1em)
   set enum(indent: indent, spacing: 1em)
@@ -171,7 +186,7 @@
    * TODO: Нумерация вложенных списков кириллическими буквами
    */
   
-  set enum(numbering: "1.а)")
+  set enum(numbering: "1.")
 
   // Применение стилей для заголовков
   show: headings(text-size, indent, pagebreaks)
