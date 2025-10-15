@@ -106,10 +106,9 @@
       left
     ),
     inset: (x: 0pt, y: 3pt), 
-    columns: (35%, 65%),
+    columns: (1fr, 3fr),
     [ФАКУЛЬТЕТ], ["#institute.name"],
     [КАФЕДРА], ["#department.name"],
-    [НАПРАВЛЕНИЕ ПОДГОТОВКИ], ["#program.id #program.name"],
   )
   v(20mm)
 }
