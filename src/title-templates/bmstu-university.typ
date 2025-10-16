@@ -23,7 +23,6 @@
 
 #let many-sign-fields(signs: ((position: none, fields: ((content: none, details: "подпись, дата"))))) = {
   // Если нет записей — ничего не рисуем.
-  // Accept nested arrays or single entries by flattening to a single array
   let signs = if type(signs) == array { signs.flatten() } else { (signs,) }
 
   if signs.len() == 0 {
@@ -112,14 +111,6 @@
   )
   v(20mm)
 }
-
-#let body(font_size: 14pt, content) = {
-  set text(size: font_size)
-  set par(leading: 1em)
-  content
-}
-
-#let footer(content: grid()) = { place(bottom, dy: -3cm, content) }
 
 #let arguments(..args, year: auto) = {
   let args = args.named()
@@ -215,7 +206,13 @@
   performer: none,
 ) = {
   
-  header(ministry: ministry, organization: organization, institute: institute, department: department, program: program)
+  header(
+    ministry: ministry,
+    organization: organization,
+    institute: institute,
+    department: department,
+    program: program
+  )
 
   per-line(
         align: center,
@@ -225,9 +222,10 @@
         (value: text(size: 20pt)[по курсу: "#discipline"], when-present: discipline),
         (value: text(size: 20pt, style:"italic")[#upper("на тему:")], when-rule: not bare-subject),
         (value: text(size: 20pt)["#upper(subject)"], when-present: subject),
-    )
+  )
 
-    many-sign-fields(signs: (
+  many-sign-fields(
+    signs: (
       if students != none {
         students.map(p => (
           position: if p.position != none { p.position } else { "Cтудент" },
@@ -249,14 +247,17 @@
         ()
       },
       if managers != none {
-        managers.map(m => (
+        managers.map(
+          m => (
           position: if m.position != none { m.position } else { "Преподаватель" },
           fields: (
             (content: none, details: "(подпись, дата)"),
             (content: unbreak-name(m.name), details: " (Фамилия И.О.)"),
           )
-        ))
+          )
+        )
       }
-    ))
+    )
+  )
   v(0.5fr)
 }

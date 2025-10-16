@@ -202,8 +202,8 @@
 
   show figure.where(kind: raw): it => {
     set block(breakable: true)
-    set figure.caption(position: top)
-    show figure.caption: set align(left)
+    set figure.caption(position: bottom)
+    show figure.caption: set align(center)
 
     let continuation = counter(str("continuation" + str(counter(figure.where(kind: raw)).get().at(0))))
 
@@ -212,8 +212,9 @@
       stroke: none,
       inset: (x: 0em, y: 0.5em),
       columns: 1fr,
-      table.header([
-        #align(left)[
+      [#it.body],
+      table.footer([
+        #align(center)[
           #context [
             #set par(justify: true, leading: 0.65em, first-line-indent: 0cm)
             #continuation.step()
@@ -226,7 +227,6 @@
           ]
         ]
       ]),
-      [#it.body],
     )
     v(-0.5em)
     counter(figure.where(kind: raw)).update(it => it - 1)
