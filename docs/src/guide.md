@@ -73,8 +73,8 @@
 
 После установки необходимо создать файл с расширением `.typ` и использовать синтаксис импорта шаблона:
 
-```typ
-#import "@preview/modern-g7-32": gost, abstract, title-templates, annexes, annex-heading
+```typst
+#import "@preview/modern-g7-32": gost, abstract, title-templates, appendixes, appendix-heading
 
 #show: gost.with(
   ministry: "Наименование министерства (ведомства) или другого структурного образования, в систему которого входит организация-исполнитель",

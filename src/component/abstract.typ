@@ -8,14 +8,17 @@
 
 // Функция `get-count` для подсчета количества различных элементов в документе.
 #let get-count(kind) = {
-  assert(kind in (page, image, table, ref, "annex"), message: "Невозможно определить количество этих элементов")
+  assert(
+    kind in (page, image, table, ref, "appendix"),
+    message: "Невозможно определить количество этих элементов",
+  )
   let target-counter = none
   let caption = none
   if kind == page {
     target-counter = counter(page)
     caption = "с."
-  } else if kind == "annex" {
-    target-counter = counter("annex")
+  } else if kind == "appendix" {
+    target-counter = counter("appendix")
     caption = "прил."
   } else if kind == ref {
     caption = "ист."
@@ -31,7 +34,11 @@
   if kind == cite {
     count = target-counter.final().dedup().len()
   } else if kind == ref {
-    count = query(selector(ref)).filter(it => it.element == none).map(it => it.target).dedup().len()
+    count = query(selector(ref))
+      .filter(it => it.element == none)
+      .map(it => it.target)
+      .dedup()
+      .len()
   } else {
     count = target-counter.final().first()
   }
@@ -63,7 +70,13 @@
      * ГОСТ 7.32-2017, п. 6.12.1: "Сведения об общем объеме отчета, количестве книг отчета, иллюстраций, таблиц, использованных источников, приложений являются первой компонентой реферата и располагаются с абзацного отступа, в строку, через запятые."
      */
     #context if count {
-      let counts = (get-count(page), get-count(image), get-count(table), get-count(ref), get-count("annex"))
+      let counts = (
+        get-count(page),
+        get-count(image),
+        get-count(table),
+        get-count(ref),
+        get-count("appendix"),
+      )
       counts = counts.filter(it => it != none)
       [Отчёт #counts.join(", ")]
     }

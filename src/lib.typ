@@ -8,11 +8,17 @@
 #import "style.typ": gost-style
 #import "utils.typ": fetch-field
 #import "component/title-templates.typ": templates
-#import "component/performers.typ": performers-page, fetch-performers
+#import "component/performers.typ": fetch-performers, performers-page
 
-// Вспомогательная функция `gost-common` для общей логики, связанной с титульным листом и исполнителями.
-#let gost-common(title-template, title-arguments, city, year, hide-title, performers, force-performers) = {
-  // Отключаем выравнивание по ширине для титульного листа и списка исполнителей, так как для них часто требуется центрирование или выравнивание по левому краю.
+#let gost-common(
+  title-template,
+  title-arguments,
+  city,
+  year,
+  hide-title,
+  performers,
+  force-performers,
+) = {
   set par(justify: false)
 
   // Преобразуем аргументы для титульного листа в именованные для удобства доступа.
@@ -89,7 +95,7 @@
   let table-counter = counter("table")
   let image-counter = counter("image")
   let citation-counter = counter("citation")
-  let annex-counter = counter("annex")
+  let appendix-counter = counter("appendix")
 
   // Правило для автоматического увеличения счетчика рисунков.
   show figure.where(kind: image): it => {
@@ -112,14 +118,27 @@
 
   // Делегируем всю настройку визуального стиля функции `gost-style` из `style.typ`.
   show: gost-style.with(
-    year, city, hide-title, text-size.default, text-size.small,
-    indent, margin, title-footer-align, pagination-align, pagebreaks
+    year,
+    city,
+    hide-title,
+    text-size.default,
+    text-size.small,
+    indent,
+    margin,
+    title-footer-align,
+    pagination-align,
+    pagebreaks,
   )
 
   // Вызываем вспомогательную функцию для обработки титульного листа и исполнителей.
   gost-common(
-    title-template, title-arguments, city, year,
-    hide-title, performers, force-performers
+    title-template,
+    title-arguments,
+    city,
+    year,
+    hide-title,
+    performers,
+    force-performers,
   )
 
   // Отображаем основное содержимое документа.

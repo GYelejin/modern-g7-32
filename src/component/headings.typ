@@ -73,8 +73,9 @@
     it
   }
 
-  // Селектор для всех структурных заголовков.
-  let structural-heading = structural-heading-titles.values().fold(selector, (acc, i) => acc.or(heading.where(body: i, level: 1)))
+  let structural-heading = structural-heading-titles
+    .values()
+    .fold(selector, (acc, i) => acc.or(heading.where(body: i, level: 1)))
 
   /*
    * ГОСТ 7.32-2017, п. 6.2.1: "Наименования структурных элементов отчета ... служат заголовками структурных элементов отчета."

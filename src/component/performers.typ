@@ -6,17 +6,19 @@
  * и разделение на исполнителей и соисполнителей.
  */
 #import "headings.typ": structural-heading-titles
-#import "../utils.typ": sign-field, fetch-field
+#import "../utils.typ": fetch-field, sign-field
 
 // Функция `fetch-performers` для обработки и стандартизации данных об исполнителях.
 #let fetch-performers(performers) = {
-  // Ожидаемые аргументы для каждого исполнителя.
-  let performers-args = ("name*", "position*", "co-performer", "part", "organization")
-  // Если исполнители переданы в виде массива.
+  let performers-args = (
+    "name*",
+    "position*",
+    "co-performer",
+    "part",
+    "organization",
+  )
   if type(performers) == array {
-    // Текущая организация (для группировки).
-    let current-organization = none;
-    // Результирующий массив.
+    let current-organization = none
     let result = ()
     // Итерация по элементам массива.
     for (i, performer) in performers.enumerate() {
@@ -25,24 +27,26 @@
         current-organization = performer
         continue
       }
-      // Извлекаем поля для исполнителя.
-      let performer = fetch-field(performer, performers-args, default: (co-performer: false), hint: "исполнителя №" + str(i + 1))
-      // Присваиваем текущую организацию.
+      let performer = fetch-field(
+        performer,
+        performers-args,
+        default: (co-performer: false),
+        hint: "исполнителя №" + str(i + 1),
+      )
       performer.organization = current-organization
       // Добавляем в результат.
       result.push(performer)
     }
     return result
-  } 
-  // Если исполнитель передан в виде словаря.
-  else if type(performers) == dictionary {
-    // Извлекаем поля.
-    let performer = fetch-field(performers, performers-args, default: (co-performer: false), hint: "исполнителя")
-    // Возвращаем как массив из одного элемента.
-    return (performer, )
-  } 
-  // Если тип не поддерживается, вызываем ошибку.
-  else {
+  } else if type(performers) == dictionary {
+    let performer = fetch-field(
+      performers,
+      performers-args,
+      default: (co-performer: false),
+      hint: "исполнителя",
+    )
+    return (performer,)
+  } else {
     panic("Некорректный тип поля исполнителей")
   }
 }
@@ -55,13 +59,19 @@
 #let group-organizations(performers) = {
   // Устанавливаем межстрочный интервал для списка.
   set par(spacing: 0.5em)
-  // Получаем уникальный список организаций.
-  let organizations = performers.map(performer => performer.organization).dedup().filter(org => org != none)
-  // Создаем словарь "организация: [исполнители]".
-  let organizations-with-performers = organizations.map(organization => (organization, performers.filter(performer => performer.organization == organization))).to-dict()
-  // Получаем список исполнителей без организации.
-  let without-organization = performers.filter(performer => performer.organization == none)
-  // Выводим исполнителей без организации.
+  let organizations = performers
+    .map(performer => performer.organization)
+    .dedup()
+    .filter(org => org != none)
+  let organizations-with-performers = organizations
+    .map(organization => (
+      organization,
+      performers.filter(performer => performer.organization == organization),
+    ))
+    .to-dict()
+  let without-organization = performers.filter(performer => (
+    performer.organization == none
+  ))
   for performer in without-organization {
     [#sign-field(performer.name, performer.position, part: performer.part)]
   }
@@ -87,21 +97,23 @@
    */
   heading(structural-heading-titles.performers, outlined: false)
 
-  // Разделяем на основных исполнителей и соисполнителей.
-  let not-co-performers = performers.filter(performer => performer.co-performer == false)
-  let co-performers = performers.filter(performer => performer.co-performer == true)
+  let not-co-performers = performers.filter(performer => (
+    performer.co-performer == false
+  ))
+  let co-performers = performers.filter(performer => (
+    performer.co-performer == true
+  ))
 
   // Выводим основных исполнителей.
   group-organizations(not-co-performers)
 
-  // Проверяем, есть ли соисполнители.
-  let contains-co-performers = performers.any(performer =>
-    ( if "co-performer" in performer.keys() and performer.co-performer != none {
+  let contains-co-performers = performers.any(performer => (
+    if "co-performer" in performer.keys() and performer.co-performer != none {
       performer.co-performer
     } else {
       false
-    })
-  )
+    }
+  ))
 
   // Если есть соисполнители, выводим их под соответствующим подзаголовком.
   if contains-co-performers {

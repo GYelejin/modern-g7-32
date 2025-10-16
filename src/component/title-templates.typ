@@ -8,9 +8,9 @@
 #let template-names = ("default", "mai-university-lab", "bmstu-university-lab")
 
 // Фабричная функция для создания унифицированного интерфейса вызова шаблона.
+// Возвращает функцию, которая принимает аргументы и передает их в функцию-шаблон.
 #let title-template-factory(template, arguments-function) = {
-    // Возвращает функцию, которая принимает аргументы и передает их в функцию-шаблон.
-    return (..arguments) => template(..arguments-function(..arguments))
+  return (..arguments) => template(..arguments-function(..arguments))
 }
 
 /*
@@ -21,7 +21,7 @@
  * придерживаясь при этом общих положений ГОСТ 7.32-2017.
  */
 #let custom-title-template(module) = {
-    title-template-factory(module.template, module.arguments)
+  title-template-factory(module.template, module.arguments)
 }
 
 /*
@@ -32,15 +32,13 @@
  * включая примеры, подобные приведенным в ГОСТ.
  */
 #let templates = {
-    // Инициализация пустого словаря.
-    let result = (:)
-    // Итерация по именам встроенных шаблонов.
-    for template in template-names {
-        // Динамический импорт модуля шаблона по его имени.
-        import "/src/title-templates/" + template + ".typ" as module
-        // Добавление созданного шаблона в словарь.
-        result.insert(template, title-template-factory(module.template, module.arguments))
-    }
-    // Возврат словаря с шаблонами.
-    result
+  let result = (:)
+  for template in template-names {
+    import "/src/title-templates/" + template + ".typ" as module
+    result.insert(template, title-template-factory(
+      module.template,
+      module.arguments,
+    ))
+  }
+  result
 }

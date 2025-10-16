@@ -1,11 +1,8 @@
 /*
- * modern-g7-32 :: ядро визуального стиля (соответствует ГОСТ)
- *
- * Этот модуль применяет все основные правила оформления документа в соответствии с ГОСТ 7.32-2017.
- * Он настраивает страницы, шрифты, абзацы, заголовки, списки, таблицы, рисунки и другие элементы.
+ * ГОСТ 7.32-2017. Параметры оформления документа.
  */
 #import "component/headings.typ": headings, structural-heading-titles
-#import "component/annexes.typ": is-heading-in-annex
+#import "component/appendixes.typ": is-heading-in-appendix
 #import "@preview/codly:1.3.0": *
 #import "@preview/codly-languages:0.1.8": *
 #import "@preview/i-figured:0.2.4"
@@ -13,7 +10,6 @@
 #import "@preview/tiptoe:0.3.1"
 
 #import "utils.typ": enum-numbering
-
 #let gost-style(
   year,
   city,
@@ -29,8 +25,10 @@
 ) = {
   // Устанавливает размер малого текста, если он не задан явно.
   if small-text-size == none { small-text-size = text-size - 4pt }
-  // Записывает параметры (размер малого текста, разрывы страниц) в метаданные для доступа из других частей шаблона.
-  [#metadata((small-text-size: small-text-size, pagebreaks: pagebreaks)) <modern-g7-32-parameters>]
+  [#metadata((
+      small-text-size: small-text-size,
+      pagebreaks: pagebreaks,
+    )) <modern-g7-32-parameters>]
 
   /*
    * ГОСТ 7.32-2017, п. 6.1.1: "Текст отчета следует печатать, соблюдая следующие размеры полей: левое - 30 мм, правое - 15 мм, верхнее и нижнее - 20 мм."
@@ -75,7 +73,7 @@
   show outline: set block(below: indent / 2)
   show outline.entry: it => {
     show linebreak: [ ]
-    if is-heading-in-annex(it.element) {
+    if is-heading-in-appendix(it.element) {
       let body = it.element.body
       link(
         it.element.location(),
@@ -246,7 +244,10 @@
     }
   })
 
-  set bibliography(style: "gost-r-7-0-5-2008-numeric.csl", title: structural-heading-titles.bibliography)
+  set bibliography(
+    style: "gost-r-7-0-5-2008-numeric.csl",
+    title: structural-heading-titles.bibliography
+  )
 
   /*
    * ГОСТ 7.32-2017, п. 6.4.6: "При необходимости ссылки в тексте отчета на один из элементов перечисления вместо тире ставят строчные буквы русского алфавита со скобкой, начиная с буквы "а" (за исключением букв ё, з, й, о, ч, ъ, ы, ь)."

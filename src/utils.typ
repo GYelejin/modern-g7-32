@@ -1,16 +1,14 @@
 /*
- * modern-g7-32 :: утилиты
- *
  * Этот модуль содержит вспомогательные функции, используемые в других частях шаблона.
- * Функции предназначены для обработки данных, форматирования текста и генерации нумерации.
  */
 
 // Функция `small-text` применяет к своему содержимому (body) малый размер шрифта,
 // который задан в глобальных параметрах шаблона.
 #let small-text = body => context {
-  // Запрашивает параметры шаблона, сохраненные в метаданных.
-  let target-size = query(<modern-g7-32-parameters>).first().value.small-text-size
-  // Устанавливает полученный размер текста для содержимого.
+  let target-size = query(<modern-g7-32-parameters>)
+    .first()
+    .value
+    .small-text-size
   set text(size: target-size)
   // Возвращает отформатированное содержимое.
   body
@@ -22,15 +20,26 @@
   let expected-keys-arg-error = "Ожидаемые ключи должны быть списком строк, например '(arg1*, arg2), здесь arg1 - обязательный агрумент, а arg2 - необязательный'"
 
   assert(type(expected-keys) == array, message: expected-keys-arg-error)
-  assert(expected-keys.map(elem => type(elem)).all(elem => elem == str), message: expected-keys-arg-error)
+  assert(
+    expected-keys.map(elem => type(elem)).all(elem => elem == str),
+    message: expected-keys-arg-error,
+  )
 
-  assert(type(default) == dictionary, message: "Стандартные значения должны быть определены в словаре, например: 'default: (arg1: false)'")
-  assert(default.len() <= expected-keys.len(), message: "Количество стандартных значений должно быть не больше числа ожидаемых аргументов")
+  assert(
+    type(default) == dictionary,
+    message: "Стандартные значения должны быть определены в словаре, например: 'default: (arg1: false)'",
+  )
+  assert(
+    default.len() <= expected-keys.len(),
+    message: "Количество стандартных значений должно быть не больше числа ожидаемых аргументов",
+  )
 
   let get-default(key) = (key, default.at(key, default: none))
 
   let clean-expected-keys = expected-keys.map(key => key.replace("*", ""))
-  let required-keys = expected-keys.filter(key => key.at(-1) == "*").map(key => key.slice(0, -1))
+  let required-keys = expected-keys
+    .filter(key => key.at(-1) == "*")
+    .map(key => key.slice(0, -1))
   let not-required-keys = expected-keys.filter(key => key.at(-1) != "*")
 
   if type(field) == type(none) {
@@ -38,37 +47,65 @@
   }
 
   if type(field) == dictionary {
-    let result = (:)
-    for key in clean-expected-keys {
-      result.insert(key, field.at(key, default: default.at(key, default: none)))
-    }
-
     for key in required-keys {
-      assert(key in field.keys(), message: "Обязательное поле '" + key + "' не было найдено в словаре " + hint)
+      assert(
+        key in field.keys(),
+        message: "В словаре "
+          + hint
+          + " отсутствует обязательный ключ '"
+          + key
+          + "'",
+      )
     }
-
+    for key in field.keys() {
+      assert(
+        key in clean-expected-keys,
+        message: "В словаре "
+          + hint
+          + " обнаружен неожиданный ключ '"
+          + key
+          + "', допустимые ключи: "
+          + repr(expected-keys),
+      )
+    }
+    let result = clean-expected-keys.map(get-default).to-dict()
+    for (key, value) in field {
+      result.insert(key, value)
+    }
     return result
   } else if type(field) == array {
+    assert(
+      field.len() >= required-keys.len(),
+      message: "В списке "
+        + hint
+        + " указаны не все обязательные элементы: "
+        + repr(required-keys),
+    )
+    assert(
+      field.len() <= expected-keys.len(),
+      message: "В списке "
+        + hint
+        + " указано слишком много аргументов, требуемые: "
+        + repr(expected-keys),
+    )
     let result = (:)
     for (i, key) in clean-expected-keys.enumerate() {
       result.insert(key, field.at(i, default: default.at(key, default: none)))
     }
-
-    for key in required-keys {
-      assert(clean-expected-keys.find(it => it == key) < field.len(), message: "Обязательное поле '" + key + "' не было найдено в массиве " + hint)
-    }
-
     return result
   } else if type(field) in (str, int, length) {
-    let result = (:)
-    let first-key = clean-expected-keys.first()
-    result.insert(first-key, field)
-    for key in clean-expected-keys.slice(1) {
-      result.insert(key, default.at(key, default: none))
-    }
+    let result = clean-expected-keys.map(get-default).to-dict()
+    result.insert(clean-expected-keys.at(0), field)
     return result
   } else {
-    panic("Некорректный тип поля " + hint)
+    panic(
+      "Некорректный тип поля "
+        + repr(type(field))
+        + "("
+        + repr(field)
+        + ") используйте словарь, список или строку для значения "
+        + hint,
+    )
   }
 }
 
@@ -103,7 +140,36 @@
  * ГОСТ 7.32-2017, п. 6.17.4: "Приложения обозначают прописными буквами кириллического алфавита, начиная с А, за исключением букв Ё, З, Й, О, Ч, Ъ, Ы, Ь."
  */
 #let get-numbering-alphabet(number) = {
-  let alphabet = ("а", "б", "в", "г", "д", "е", "ж", "з", "и", "к", "л", "м", "н", "о", "п", "р", "с", "т", "у", "ф", "х", "ц", "ч", "ш", "щ", "э", "ю", "я")
+  let alphabet = (
+    "а",
+    "б",
+    "в",
+    "г",
+    "д",
+    "е",
+    "ж",
+    "з",
+    "и",
+    "к",
+    "л",
+    "м",
+    "н",
+    "о",
+    "п",
+    "р",
+    "с",
+    "т",
+    "у",
+    "ф",
+    "х",
+    "ц",
+    "ч",
+    "ш",
+    "щ",
+    "э",
+    "ю",
+    "я",
+  )
   let result = ""
 
   while number > 0 {
@@ -117,7 +183,7 @@
 #let heading-numbering(..nums) = {
   nums = nums.pos()
   let letter = upper(get-numbering-alphabet(nums.first()))
-  let rest = nums.slice(1).map(elem=>str(elem))
+  let rest = nums.slice(1).map(elem => str(elem))
   if rest != none {
     return (letter, rest).flatten().join(".")
   }
@@ -125,5 +191,5 @@
 }
 
 #let enum-numbering(number) = {
-  return [#get-numbering-alphabet(number))]
+  return [#get-numbering-alphabet(number)]
 }

@@ -17,32 +17,41 @@
  * расшифровки подписи (инициалы и фамилия), даты согласования и утверждения отчета."
  */
 #let detailed-sign-field(title, name, position, year) = {
-    // Проверки типов входных данных.
-    assert(type(name) == str, message: "Некорректный тип поля name в detailed-sign-field, должен быть строкой")
-    assert(type(position) == str, message: "Некорректный тип поля position в detailed-sign-field, должен быть строкой")
-    assert(type(year) in (int, type(none)), message: "Некорректный тип поля year в detailed-sign-field, должен быть целым числом")
-    // Переменная для ячейки с годом.
-    let year-cell = []
-    // Переменная для определения конца линии подписи.
-    let line-end = 7
-    // Если год указан, создать ячейку и скорректировать линию.
-    if year != none {
-      year-cell = table.cell(align: right)[#year г.]
-      line-end = 6
-    }
-    // Создание таблицы для форматирования поля.
-    table(
-        stroke: none, // Без видимых границ.
-        align: left, // Выравнивание по левому краю.
-        inset: (x: 0%), // Без внутренних отступов.
-        columns: (8pt, 2fr, 2pt, 10pt, 2fr, auto, 45pt), // Определение колонок.
-        table.cell(colspan: 7)[#upper(title)], // Заголовок поля (УТВЕРЖДАЮ).
-        table.cell(colspan: 7)[#position], // Должность.
-        table.cell(colspan: 5)[], table.cell(colspan: 2, align: right)[#unbreak-name(name)], // ФИО с неразрывными пробелами.
-        table.hline(start: 0, end: 5), // Линия для подписи.
-        table.cell(align: right)[«], [], table.cell(align: left)[»], [], [], [], year-cell, // Кавычки для даты и ячейка с годом.
-        table.hline(start: 1, end: 2), table.hline(start: 4, end: line-end) // Линии для даты.
-    )
+  assert(
+    type(name) == str,
+    message: "Некорректный тип поля name в detailed-sign-field, должен быть строкой",
+  )
+  assert(
+    type(position) == str,
+    message: "Некорректный тип поля position в detailed-sign-field, должен быть строкой",
+  )
+  assert(
+    type(year) in (int, type(none)),
+    message: "Некорректный тип поля year в detailed-sign-field, должен быть целым числом",
+  )
+  let year-cell = []
+  let line-end = 7
+  if year != none {
+    year-cell = table.cell(align: right)[#year г.]
+    line-end = 6
+  }
+  table(
+    stroke: none,
+    align: left,
+    inset: (x: 0%),
+    columns: (8pt, 2fr, 2pt, 10pt, 2fr, auto, 45pt),
+    table.cell(colspan: 7)[#upper(title)],
+    table.cell(colspan: 7)[#position],
+    table.cell(colspan: 5)[], table.cell(
+      colspan: 2,
+      align: right,
+    )[#unbreak-name(name)],
+    table.hline(start: 0, end: 5),
+    table.cell(align: right)[«], [], table.cell(
+      align: left,
+    )[»], [], [], [], year-cell,
+    table.hline(start: 1, end: 2), table.hline(start: 4, end: line-end)
+  )
 }
 
 // Псевдоним для функции выравнивания.
@@ -58,13 +67,21 @@
     let rule = false
     // Если элемент - массив или словарь, обработать его по сложным правилам.
     if type(value) in (array, dictionary) {
-      let data = fetch-field(value, ("value*", "when-rule", "when-present", "rule"), default: (when-present: "always", when-rule: "always", rule: array.all), hint: "линии")
-      assert(not (data.when-rule != "always" and data.when-present != "always"), message: "Должно быть выбрано только одно правило пояивления when-rule или when-present")
+      let data = fetch-field(
+        value,
+        ("value*", "when-rule", "when-present", "rule"),
+        default: (when-present: "always", when-rule: "always", rule: array.all),
+        hint: "линии",
+      )
+      assert(
+        not (data.when-rule != "always" and data.when-present != "always"),
+        message: "Должно быть выбрано только одно правило пояивления when-rule или when-present",
+      )
       if data.when-rule != "always" {
         rule = data.when-rule
       }
       if data.when-present != "always" {
-        rule = (data.rule)((data.when-present, ).flatten(), elem => elem != none)
+        rule = (data.rule)((data.when-present,).flatten(), elem => elem != none)
       }
       if data.when-rule == "always" and data.when-present == "always" {
         rule = true
@@ -83,7 +100,7 @@
   // Если есть что отображать, создать грид с элементами.
   if result != () {
     align-function(align)[
-      #grid[#for elem in result {[#elem \ ]}]
+      #grid[#for elem in result { [#elem \ ] }]
     ]
   }
   // Добавить вертикальный отступ, если требуется.
@@ -94,8 +111,10 @@
 
 // Функция `if-present` для условного отображения блока, если цели не пустые.
 #let if-present(rule: array.all, indent: v(1fr), ..targets, body) = {
-  // Проверка, что правило корректно (все или любой).
-  assert(rule in (array.all, array.any), message: "Правило сравнения указано неверно, должно быть array.all или array.any")
+  assert(
+    rule in (array.all, array.any),
+    message: "Правило сравнения указано неверно, должно быть array.all или array.any",
+  )
   // Функция для проверки, что цель не пустая.
   let check = (target => target != none)
   // Если правило выполняется для переданных целей.
@@ -113,7 +132,12 @@
  */
 #let approved-field(approved-by) = {
   if approved-by.name != none [
-    #detailed-sign-field("согласовано", approved-by.name, approved-by.position, approved-by.year)
+    #detailed-sign-field(
+      "согласовано",
+      approved-by.name,
+      approved-by.position,
+      approved-by.year,
+    )
   ]
 }
 
@@ -124,7 +148,12 @@
  */
 #let agreed-field(agreed-by) = {
   if agreed-by.name != none [
-    #detailed-sign-field("утверждаю", agreed-by.name, agreed-by.position, agreed-by.year)
+    #detailed-sign-field(
+      "утверждаю",
+      agreed-by.name,
+      agreed-by.position,
+      agreed-by.year,
+    )
   ]
 }
 
@@ -138,11 +167,11 @@
   if-present(rule: array.any, approved-by.name, agreed-by.name)[
     // Использовать грид для размещения в две колонки.
     #grid(
-      columns: (1fr, 1fr), // Две равные колонки.
-      align: (left, right), // Выравнивание в колонках.
-      gutter: 15%, // Промежуток между колонками.
-      approved-field(approved-by), // Поле "СОГЛАСОВАНО".
-      agreed-field(agreed-by) // Поле "УТВЕРЖДАЮ".
+  columns: (1fr, 1fr), // Две равные колонки.
+  align: (left, right), // Выравнивание в колонках.
+  gutter: 15%, // Промежуток между колонками.
+  approved-field(approved-by), // Поле "СОГЛАСОВАНО".
+  agreed-field(agreed-by) // Поле "УТВЕРЖДАЮ".
     )
   ]
 }
