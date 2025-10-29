@@ -48,7 +48,7 @@
     font: "Times New Roman",
     size: text-size,
     lang: "ru",
-    hyphenate: false,
+    hyphenate: true,
   )
 
   /*
